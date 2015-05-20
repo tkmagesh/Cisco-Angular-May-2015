@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Math Calculator</title>
+    <script src="jquery-1.11.3.js"></script>
+    <script src="angular.js"></script>
+    <script src="appInit.js"></script>
+    <style>
+     #divResult {
+            color: red;
+            font-size: 28pt;
+        }
+    </style>
+    <script>
+    function MathCalculator(){
+        this.number1 = "0";
+        this.number2 = "0";
+        this.result = "0";
+    }
+    MathCalculator.prototype.add = function(){
+        this.result = this.number1 + this.number2;
+    };
+    MathCalculator.prototype.subtract = function(){
+        this.result = this.number1 - this.number2;
+    };
+    MathCalculator.prototype.multiply = function(){
+        this.result = this.number1 * this.number2;
+    };
+    MathCalculator.prototype.divide = function(){
+        this.result = this.number1 / this.number2;
+    };
+    
+    appInit(function(scope){
+        scope.calc = new MathCalculator();
+    });
+    </script>
+</head>
+<body>
+    <input type="text" name="" id="" app-model="calc.number1">
+    <input type="text" name="" id="" app-model="calc.number2">
+    <br>
+    <input type="button" value="Add" app-click="calc.add()">
+    <input type="button" value="Subtract" app-click="calc.subtract()">
+    <input type="button" value="Multiply" app-click="calc.multiply()">
+    <input type="button" value="Divide" app-click="calc.divide()">
+    <div id="divResult" app-bind="calc.result"></div>
+</body>
+</html>
