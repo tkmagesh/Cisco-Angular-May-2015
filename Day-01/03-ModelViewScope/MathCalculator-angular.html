@@ -35,19 +35,21 @@
         angular.element(document.body).scope().calc = new MathCalculator();
     });*/
 
-    angular.module("myApp",[]).run(function($rootScope){
-        $rootScope.calc = new MathCalculator();
+    var myApp = angular.module("myApp",[])
+    myApp.run(function($rootScope){
+        $rootScope.appName = "Math Calculator"
     });
+    myApp.controller("mathController", function($scope){
+        $scope.calc = new MathCalculator();
+    })
     </script>
 </head>
 <body ng-app="myApp">
-    <input type="text" name="" id="" ng-model="calc.number1">
-    <input type="text" name="" id="" ng-model="calc.number2">
-    <br>
-    <input type="button" value="Add" ng-click="calc.add()">
-    <input type="button" value="Subtract" ng-click="calc.subtract()">
-    <input type="button" value="Multiply" ng-click="calc.multiply()">
-    <input type="button" value="Divide" ng-click="calc.divide()">
-    <div id="divResult" ng-bind="calc.result"></div>
+    <div ng-contxlue="Subtract" ng-click="calc.subtract()">
+        <input type="button" value="Multiply" ng-click="calc.multiply()">
+        <input type="button" value="Divide" ng-click="calc.divide()">
+        <div id="divResult" ng-bind="calc.result | currency"></div>
+    </div>
+
 </body>
 </html>

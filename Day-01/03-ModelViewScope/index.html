@@ -11,8 +11,13 @@
             margin-bottom: 10px;
         }
         #divResult {
-            color: red;
             font-size: 28pt;
+        }
+        .good{
+            color : green;
+        }
+        .bad {
+            color : red;
         }
     </style>
     <script src="jquery-1.11.3.js"></script>
@@ -30,42 +35,51 @@
         this.salary = 0;
     }
     SalaryCalculator.prototype.calculate = function(){
-        var gross = this.basic + this.hra + this.da;
-        this.salary = gross * ((100-this.tax)/100);
+        var gross = this.basic.toFloat() + this.hra.toFloat() + this.da.toFloat();
+        this.salary = gross * ((100-this.tax.toFloat())/100);
     }
     
-    appInit(function(scope){
-        scope.calculator = new SalaryCalculator();
+   angular.module("myApp",[])
+    .controller("salaryCalculatorController", function($scope){
+       $scope.calculator = new SalaryCalculator();
+       $scope.applyCess = function(){
+           $scope.calculator.salary = $scope.calculator.salary * ((100-$scope.cessPercent.toFloat())/100);
+       };
     });
     
     </script>
 </head>
-<body>
+<body ng-app="myApp">
     <h1>Salary Calculator</h1>
     <hr>
-    <div class="content">
+    <div class="content" ng-controller="salaryCalculatorController">
         <div class="field">
             <label for="">Basic :</label>
-            <input type="text" name="" id="txtBasic" app-model="calculator.basic">
+            <input type="text" name="" id="txtBasic" ng-model="calculator.basic">
         </div>
         <div class="field">
             <label for="">HRA :</label>
-            <input type="text" name="" id="txtHra" app-model="calculator.hra">
+            <input type="text" name="" id="txtHra" ng-model="calculator.hra">
         </div>
         <div class="field">
             <label for="">DA :</label>
-            <input type="text" name="" id="txtDa" app-model="calculator.da">
+            <input type="text" name="" id="txtDa" ng-model="calculator.da">
         </div>
         <div class="field">
             <label for="">Tax %:</label>
-            <input type="range" name="" id="rangeTax" min="0" max="30" value="0" app-model="calculator.tax">
-            <span id="spanTax" app-bind="calculator.tax">[Tax]</span>
+            <input type="range" name="" id="rangeTax" min="0" max="30" value="0" ng-model="calculator.tax">
+            <span id="spanTax" ng-bind="calculator.tax">[Tax]</span>
         </div>
         <div class="field">
-            <input type="button" value="Calculate" id="btnCalculate" app-click="calculator.calculate()">
+            <input type="button" value="Calculate" id="btnCalculate" ng-click="calculator.calculate()">
         </div>
         <div class="field">
-            <div id="divResult" app-bind="calculator.salary">[Salary]</div>
+            <div id="divResult" ng-bind="calculator.salary">[Salary]</div>
+        </div>
+        <div class="field" >
+            <label for="">Education Cess :</label>
+            <input type="text" name="" id="txtDa" ng-model="cessPercent">
+            <input type="button" value="Apply Cess" ng-click="applyCess()" ng-disabled="calculator.salary == 0">
         </div>
     </div>
 </body>
