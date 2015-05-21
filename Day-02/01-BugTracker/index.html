@@ -16,8 +16,9 @@
      7. Display stats (closed # - Total #) - done
      8. Change the bug title size for display - done
 
-     9. Persist the bugs in the localstorage
-     10. Display the created date of the bug
+     9. Persist the bugs in the localstorage - done
+     10. Display the created date of the bug - done
+
      11. Persist the bugs in the server
      12. Create a module for managing projects
      13. Authentication and Authorization
@@ -41,13 +42,36 @@
     angular.fromJson(string) // => object [for reading]
      -->
      <style>
+         ol{
+             width: 60%
+         }
+         li{
+             list-style: none;
+             border : 2px solid gray;
+             background: -webkit-linear-gradient(top, white 0%, lightgray 100%);
+             padding : 5px;
+             margin-bottom: 5px;
+             border-radius: 10px;
+         }
+         li.closed{
+             border-color : red;
+             background: -webkit-linear-gradient(top, white 0%, lightpink 100%);
+
+         }
+         .bugTitle{
+             font-size: 19pt;
+         }
+         .timeStamp {
+             font-style: italic;
+             font-size: small;
+         }
          .stats{
              font-size: 18pt;
          }
          div {
              margin-bottom: 10px;
          }
-         .closed {
+         li.closed div.bugTitle{
              color : red;
              font-style: italic;
              text-decoration: line-through;
@@ -55,6 +79,7 @@
          }
     </style>
      <script src="angular.js"></script>
+     <script src="moment.js"></script>
      <script>
 
          var utils = angular.module("utils", []);
@@ -67,6 +92,15 @@
                  return data.length < limitLength ? data : data.substr(0,limitLength) + "...";
              }
          });
+
+         utils.value("momentApi", moment);
+
+         utils.filter("toMoment", function(momentApi){
+             return function(data){
+                 return momentApi(data).fromNow();
+             }
+         });
+
 
          var bugTracker = angular.module("bugTracker", ["utils"]);
          bugTracker.value("bugDefaults", {
@@ -128,7 +162,7 @@
 
             $scope.toggle = function(bug){
                 bug.toggle();
-                saveBugInStorage(bug);
+                bugStorage.save(bug);
             };
             $scope.removeClosed = function(){
                 for(var i=$scope.bugs.length-1; i>=0; i--)
@@ -193,11 +227,14 @@
             <input type="button" value="Add Bug" ng-click="addBug()">
             <input type="button" value="Remove Closed" ng-click="removeClosed()">
             <ol>
-                <li
-                    ng-repeat="bug in bugs | filter:searchBug | orderBy:bugAttributeName:inDescendingOrder"
-                    ng-click="toggle(bug)"
-                    ng-class="{closed : bug.isClosed}"
-                >{{bug.title | trimText}}</li>
+                <li ng-repeat="bug in bugs | filter:searchBug | orderBy:bugAttributeName:inDescendingOrder"
+                   ng-class="{closed : bug.isClosed}"
+                    > <div>
+                        <div class="bugTitle" ng-click="toggle(bug)"
+                    >{{bug.title | trimText}}</div>
+                        <div class="timeStamp">{{bug.createdAt | toMoment}}</div>
+                    </div>
+                </li>
             </ol>
         </div>
     </div>
