@@ -14,7 +14,8 @@
      5. Search for bugs - done
      6. Sort the bugs - done
      7. Display stats (closed # - Total #) - done
-     8. Change the bug title size for display
+     8. Change the bug title size for display - done
+
      9. Persist the bugs in the localstorage
      10. Display the created date of the bug
      11. Persist the bugs in the server
@@ -39,24 +40,54 @@
     </style>
      <script src="angular.js"></script>
      <script>
-         var bugTracker = angular.module("bugTracker", []);
-         bugTracker.controller("bugsController", function($scope){
+
+         var utils = angular.module("utils", []);
+
+         utils.value("defaultTrimTextLimitLength", 20);
+
+         utils.filter("trimText", function(defaultTrimTextLimitLength){
+             return function(data, limitLength){
+                 limitLength = limitLength || defaultTrimTextLimitLength;
+                 return data.length < limitLength ? data : data.substr(0,limitLength) + "...";
+             }
+         });
+
+         var bugTracker = angular.module("bugTracker", ["utils"]);
+         bugTracker.value("bugDefaults", {
+             title : '',
+             isClosed : false
+         });
+         bugTracker.factory("Bug", function getBugClass(bugDefaults){
+             function Bug(defaults){
+                 defaults = defaults || bugDefaults;
+             };
+             Bug.prototype.toggle = function(){
+                 this.isClosed = !this.isClosed;
+             };
+             return Bug;
+         });
+
+
+
+
+
+         bugTracker.controller("bugsController", function($scope, Bug){
             $scope.bugs = [
-                {title : "Unable to login", isClosed : false},
-                {title : "Data persistence failure", isClosed : true},
-                {title : "Server communication fails often", isClosed : false}
+                new Bug({title : "Unable to login", isClosed : false}),
+                new Bug({title : "Data persistence failure", isClosed : true}),
+                new Bug({title : "Server communication fails often", isClosed : false})
             ];
             $scope.bugTitle = '';
             $scope.addBug = function(){
-                var newBug = {
+                var newBug = new Bug({
                     title : $scope.bugTitle,
                     isClosed : false
-                };
+                });
                 $scope.bugs.push(newBug);
                 $scope.bugTitle = '';
             };
             $scope.toggle = function(bug){
-                bug.isClosed = !bug.isClosed;
+                bug.toggle();
             };
             $scope.removeClosed = function(){
                 for(var i=$scope.bugs.length-1; i>=0; i--)
@@ -88,6 +119,7 @@
                  return builtinFilterFilter(data, {isClosed : true}).length;
              }
          });*/
+
 
     </script>
 </head>
@@ -122,7 +154,7 @@
                     ng-repeat="bug in bugs | filter:searchBug | orderBy:bugAttributeName:inDescendingOrder"
                     ng-click="toggle(bug)"
                     ng-class="{closed : bug.isClosed}"
-                >{{bug}}</li>
+                >{{bug.title | trimText}}</li>
             </ol>
         </div>
     </div>
