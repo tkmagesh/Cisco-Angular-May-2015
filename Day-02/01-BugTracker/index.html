@@ -24,24 +24,34 @@
      -->
      <script src="angular.js"></script>
      <script>
-
+         var bugTracker = angular.module("bugTracker", []);
+         bugTracker.controller("bugsController", function($scope){
+            $scope.bugs = [
+                "Unable to login",
+                "Data persistence failure",
+                "Server communication fails often"
+            ];
+            $scope.bugTitle = '';
+            $scope.addBug = function(){
+                $scope.bugs.push($scope.bugTitle);
+                $scope.bugTitle = '';
+            };
+         });
     </script>
 </head>
-<body>
+<body ng-app="bugTracker">
     <h1>Bug Tracker</h1>
-    <div class="content">
+    <div class="content" ng-controller="bugsController">
         <div class="stats"></div>
         <div class="search"></div>
         <div class="sort"></div>
         <div class="bugsList">
             <label for="">Bug :</label>
-            <input type="text" name="" id="">
-            <input type="button" value="Add Bug">
+            <input type="text" ng-model="bugTitle">
+            <input type="button" value="Add Bug" ng-click="addBug()">
             <input type="button" value="Remove Closed">
             <ol>
-                <li>Bug - 1</li>
-                <li>Bug - 2</li>
-                <li>Bug - 3</li>
+                <li>{{bugs}}</li>
             </ol>
         </div>
     </div>
