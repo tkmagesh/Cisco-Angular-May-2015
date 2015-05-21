@@ -6,8 +6,8 @@
      <!--
      Use Cases
      =========
-     1. List a set of bugs
-     2. Add a new bug
+     1. List a set of bugs - done
+     2. Add a new bug - done
      3. Toggle the 'closed' status of a bug
      4. Remove closed bugs
      5. Search for bugs
@@ -22,20 +22,32 @@
      14. Unit Test
      15. Deployment
      -->
+     <style>
+         .closed {
+             color : red;
+             font-style: italic;
+             text-decoration: line-through;
+             font-weight: bold;
+         }
+    </style>
      <script src="angular.js"></script>
      <script>
          var bugTracker = angular.module("bugTracker", []);
          bugTracker.controller("bugsController", function($scope){
             $scope.bugs = [
-                "Unable to login",
-                "Data persistence failure",
-                "Server communication fails often"
+                {title : "Unable to login", isClosed : false},
+                {title : "Data persistence failure", isClosed : false},
+                {title : "Server communication fails often", isClosed : false}
             ];
             $scope.bugTitle = '';
             $scope.addBug = function(){
                 $scope.bugs.push($scope.bugTitle);
                 $scope.bugTitle = '';
             };
+            $scope.toggle = function(bug){
+                bug.isClosed = !bug.isClosed;
+            }
+
          });
     </script>
 </head>
@@ -51,7 +63,7 @@
             <input type="button" value="Add Bug" ng-click="addBug()">
             <input type="button" value="Remove Closed">
             <ol>
-                <li>{{bugs}}</li>
+                <li ng-repeat="bug in bugs" ng-click="toggle(bug)" ng-class="{closed : bug.isClosed}">{{bug}}</li>
             </ol>
         </div>
     </div>
