@@ -13,7 +13,7 @@
 
      5. Search for bugs - done
      6. Sort the bugs - done
-     7. Display stats (closed # - Total #)
+     7. Display stats (closed # - Total #) - done
      8. Change the bug title size for display
      9. Persist the bugs in the localstorage
      10. Display the created date of the bug
@@ -48,7 +48,11 @@
             ];
             $scope.bugTitle = '';
             $scope.addBug = function(){
-                $scope.bugs.push($scope.bugTitle);
+                var newBug = {
+                    title : $scope.bugTitle,
+                    isClosed : false
+                };
+                $scope.bugs.push(newBug);
                 $scope.bugTitle = '';
             };
             $scope.toggle = function(bug){
@@ -63,18 +67,37 @@
             /*$scope.searchBug = {
                 title : '',
                 isClosed : undefined
+            };*/
+            $scope.getClosedCount = function(){
+                 return $scope.bugs.filter(function(bug){
+                     return bug.isClosed;
+                 }).length;
             };
-*/
          });
+
+         /*bugTracker.filter("getClosedCount", function(){ // factory to create the filter
+             return function(data){ // the actual filter
+                 return data.filter(function(bug){
+                     return bug.isClosed;
+                 }).length;
+             }
+         });*/
+         /*bugTracker.filter("getClosedCount", function($filter){ // factory to create the filter
+             return function(data){ // the actual filter
+                 var builtinFilterFilter = $filter('filter');
+                 return builtinFilterFilter(data, {isClosed : true}).length;
+             }
+         });*/
+
     </script>
 </head>
 <body ng-app="bugTracker">
     <h1>Bug Tracker</h1>
     <div class="content" ng-controller="bugsController">
         <div class="stats">
-            <span class="closed">2</span>
+            <span class="closed">{{ (bugs | filter:{isClosed : true}).length }}</span>
             <span> / </span>
-            <span> 10 </span>
+            <span> {{bugs.length}} </span>
         </div>
         <div class="search">
             <label for="">Search :</label>
