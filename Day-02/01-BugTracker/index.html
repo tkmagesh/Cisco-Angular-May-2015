@@ -10,6 +10,7 @@
      2. Add a new bug - done
      3. Toggle the 'closed' status of a bug
      4. Remove closed bugs
+
      5. Search for bugs
      6. Sort the bugs
      7. Display stats (closed # - Total #)
@@ -23,6 +24,9 @@
      15. Deployment
      -->
      <style>
+         div {
+             margin-bottom: 10px;
+         }
          .closed {
              color : red;
              font-style: italic;
@@ -51,8 +55,13 @@
                 for(var i=$scope.bugs.length-1; i>=0; i--)
                     if ($scope.bugs[i].isClosed)
                         $scope.bugs.splice(i,1);
-            }
+            };
 
+            /*$scope.searchBug = {
+                title : '',
+                isClosed : undefined
+            };
+*/
          });
     </script>
 </head>
@@ -60,7 +69,13 @@
     <h1>Bug Tracker</h1>
     <div class="content" ng-controller="bugsController">
         <div class="stats"></div>
-        <div class="search"></div>
+        <div class="search">
+            <label for="">Search :</label>
+            <input type="text" ng-model="searchBug.title">
+            <label for="">Is Closed?</label>
+            <input type="checkbox" ng-model="searchBug.isClosed">
+            <input type="button" value="Display All" ng-click="searchBug.isClosed = undefined" >
+        </div>
         <div class="sort"></div>
         <div class="bugsList">
             <label for="">Bug :</label>
@@ -68,7 +83,11 @@
             <input type="button" value="Add Bug" ng-click="addBug()">
             <input type="button" value="Remove Closed" ng-click="removeClosed()">
             <ol>
-                <li ng-repeat="bug in bugs" ng-click="toggle(bug)" ng-class="{closed : bug.isClosed}">{{bug}}</li>
+                <li
+                    ng-repeat="bug in bugs | filter:searchBug"
+                    ng-click="toggle(bug)"
+                    ng-class="{closed : bug.isClosed}"
+                >{{bug}}</li>
             </ol>
         </div>
     </div>
