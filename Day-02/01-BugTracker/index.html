@@ -23,6 +23,22 @@
      13. Authentication and Authorization
      14. Unit Test
      15. Deployment
+
+
+     localStorage
+     ============
+     window.localStorage
+     (key/value store, persistent, same-origin policy, both key and value should be strings)
+     APIs
+         - setItem(key, value)
+         - getItem(key) //=> value
+         - removeItem(key)
+         - key(index) //=> key at index
+         - clear()
+         - length
+
+    angular.toJson(obj) // => string [for saving]
+    angular.fromJson(string) // => object [for reading]
      -->
      <style>
          .stats{
@@ -60,18 +76,16 @@
          bugTracker.factory("Bug", function getBugClass(bugDefaults){
              function Bug(defaults){
                  defaults = defaults || bugDefaults;
+                 this.title = defaults.title;
+                 this.isClosed = defaults.isClosed;
+                 this.createdAt = defaults.createdAt || new Date();
              };
              Bug.prototype.toggle = function(){
                  this.isClosed = !this.isClosed;
              };
              return Bug;
          });
-
-
-
-
-
-         bugTracker.controller("bugsController", function($scope, Bug){
+     bugTracker.controller("bugsController", function($scope, Bug){
             $scope.bugs = [
                 new Bug({title : "Unable to login", isClosed : false}),
                 new Bug({title : "Data persistence failure", isClosed : true}),
