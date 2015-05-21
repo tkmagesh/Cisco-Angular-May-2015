@@ -46,6 +46,11 @@
             };
             $scope.toggle = function(bug){
                 bug.isClosed = !bug.isClosed;
+            };
+            $scope.removeClosed = function(){
+                for(var i=$scope.bugs.length-1; i>=0; i--)
+                    if ($scope.bugs[i].isClosed)
+                        $scope.bugs.splice(i,1);
             }
 
          });
@@ -61,7 +66,7 @@
             <label for="">Bug :</label>
             <input type="text" ng-model="bugTitle">
             <input type="button" value="Add Bug" ng-click="addBug()">
-            <input type="button" value="Remove Closed">
+            <input type="button" value="Remove Closed" ng-click="removeClosed()">
             <ol>
                 <li ng-repeat="bug in bugs" ng-click="toggle(bug)" ng-class="{closed : bug.isClosed}">{{bug}}</li>
             </ol>
