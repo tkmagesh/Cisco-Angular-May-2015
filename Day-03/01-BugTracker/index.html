@@ -158,17 +158,21 @@
                 });
             $scope.bugTitle = '';
             $scope.addBug = function(){
-                var newBug = bugStorage.save(new Bug({
+                var newBugData = {
                     title : $scope.bugTitle,
                     isClosed : false
-                }));
-                $scope.bugs.push(newBug);
-                $scope.bugTitle = '';
+                };
+                $http
+                    .post('http://localhost:9090/bugs',newBugData)
+                    .then(function(response){
+                        $scope.bugs.push(new Bug(response.data));
+                        $scope.bugTitle = '';
+                    });
             };
 
             $scope.toggle = function(bug){
                 bug.toggle();
-                //bugStorage.save(bug);
+                $http.put('http://localhost:9090/bugs/' + bug.id, bug);
             };
             $scope.removeClosed = function(){
                 for(var i=$scope.bugs.length-1; i>=0; i--)
