@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bug Tracker</title>
+     <!--
+     Use Cases
+     =========
+     1. List a set of bugs - done
+     2. Add a new bug - done
+     3. Toggle the 'closed' status of a bug - done
+     4. Remove closed bugs - done
+
+     5. Search for bugs - done
+     6. Sort the bugs - done
+     7. Display stats (closed # - Total #) - done
+     8. Change the bug title size for display - done
+
+     9. Persist the bugs in the localstorage - done
+     10. Display the created date of the bug - done
+
+     11. Persist the bugs in the server
+     12. Create a module for managing projects
+     13. Authentication and Authorization
+     14. Unit Test
+     15. Deployment
+
+
+     localStorage
+     ============
+     window.localStorage
+     (key/value store, persistent, same-origin policy, both key and value should be strings)
+     APIs
+         - setItem(key, value)
+         - getItem(key) //=> value
+         - removeItem(key)
+         - key(index) //=> key at index
+         - clear()
+         - length
+
+    angular.toJson(obj) // => string [for saving]
+    angular.fromJson(string) // => object [for reading]
+     -->
+     <style>
+         ol{
+             width: 60%
+         }
+         li{
+             list-style: none;
+             border : 2px solid gray;
+             background: -webkit-linear-gradient(top, white 0%, lightgray 100%);
+             padding : 5px;
+             margin-bottom: 5px;
+             border-radius: 10px;
+         }
+         li.closed{
+             border-color : red;
+             background: -webkit-linear-gradient(top, white 0%, lightpink 100%);
+
+         }
+         .bugTitle{
+             font-size: 19pt;
+         }
+         .timeStamp {
+             font-style: italic;
+             font-size: small;
+         }
+         .stats{
+             font-size: 18pt;
+         }
+         div {
+             margin-bottom: 10px;
+         }
+         li.closed div.bugTitle{
+             color : red;
+             font-style: italic;
+             text-decoration: line-through;
+             font-weight: bold;
+         }
+    </style>
+     <script src="angular.js"></script>
+     <script src="moment.js"></script>
+     <script>
+
+         var utils = angular.module("utils", []);
+
+         utils.value("defaultTrimTextLimitLength", 20);
+
+         utils.filter("trimText", function(defaultTrimTextLimitLength){
+             return function(data, limitLength){
+                 limitLength = limitLength || defaultTrimTextLimitLength;
+                 data = data || '';
+                 return data.length < limitLength ? data : data.substr(0,limitLength) + "...";
+             }
+         });
+
+         utils.value("momentApi", moment);
+
+         utils.filter("toMoment", function(momentApi){
+             return function(data){
+                 return momentApi(data).fromNow();
+             }
+         });
+
+
+         var bugTracker = angular.module("bugTracker", ["utils"]);
+         bugTracker.value("bugDefaults", {
+             id : 0,
+             title : '',
+             isClosed : false
+         });
+         bugTracker.factory("Bug", function getBugClass(bugDefaults){
+             function Bug(defaults){
+                 defaults = defaults || bugDefaults;
+                 this.id = defaults.id;
+                 this.title = defaults.title;
+                 this.isClosed = defaults.isClosed;
+                 this.createdAt = defaults.createdAt || new Date();
+             };
+             Bug.prototype.toggle = function(){
+                 this.isClosed = !this.isClosed;
+             };
+             return Bug;
+         });
+         bugTracker.service("bugStorage", function(Bug){
+            var storage = window.localStorage;
+            var currentId = 0;
+            this.getAll = function getAllBugsFromStorage(){
+                var result = [];
+                for(var i=0; i<storage.length; i++){
+                    var key = storage.key(i);
+                    var dataAsString = storage.getItem(key);
+                    var dataObj = angular.fromJson(dataAsString);
+                    var bug = new Bug(dataObj);
+                    if (currentId < bug.id) currentId = bug.id;
+                    result.push(bug);
+                }
+
+                return result;
+            }
+             this.save = function saveBugInStorage(bug){
+                if (!bug.id)
+                    bug.id = ++currentId;
+                storage.setItem(bug.id, angular.toJson(bug));
+                return bug;
+            }
+             this.remove = function removeBugFromStorage(bug){
+                storage.removeItem(bug.id.toString());
+            }
+         });
+         /*bugTracker.service("bugService", function($http, Bug, $q){
+
+             this.getAll = function(){
+                 var deferred = $q.defer();
+                 $http
+                    .get('http://localhost:9090/bugs')
+                    .then(function(response){
+                        var result = response.data
+                                        .map(function(d){ return new Bug(d)})
+                        deferred.resolve(result);
+
+                    });
+                 return deferred.promise;
+             };
+
+             this.save = function(bug){
+                 var method = !bug.id ? "post" : "put";
+                 var url = "http://localhost:9090/bugs" + (method === "post" ? "" : "/" + bug.id);
+                 var deferred = $q.defer();
+                 $http({
+                    url : url,
+                    method : method,
+                    data : bug
+                 }).then(function(response){
+                     console.log(response);
+                     deferred.resolve(new Bug(response.data));
+                 })
+                 return deferred.promise;
+             };
+             this.remove = function(bug){
+                 var url = "http://localhost:9090/bugs/" + bug.id;
+                 $http({
+                     method : 'delete',
+                     url : url
+                 });
+             };
+         });*/
+         bugTracker.service("bugService", function($http, Bug, $q){
+
+             this.getAll = function(){
+                 return $http.get('http://localhost:9090/bugs')
+                    .then(function(response){
+                        return response.data.map(function(d){
+                            return new Bug(d)
+                    });
+                });
+             };
+
+             this.save = function(bug){
+                 var method = !bug.id ? "post" : "put";
+                 var url = "http://localhost:9090/bugs" + (method === "post" ? "" : "/" + bug.id);
+                 return $http({
+                    url : url,
+                    method : method,
+                    data : bug
+                 }).then(function(response){
+                     return new Bug(response.data);
+                 })
+             };
+             this.remove = function(bug){
+                 var url = "http://localhost:9090/bugs/" + bug.id;
+                 $http({
+                     method : 'delete',
+                     url : url
+                 });
+             };
+         });
+         bugTracker.controller("bugsController", function($scope, bugService){
+
+            $scope.bugs = [];
+            bugService.getAll()
+                .then(function(bugs){
+                    $scope.bugs = bugs;
+                })
+            $scope.bugTitle = '';
+
+            $scope.addBug = function(){
+                var newBugData = {
+                    title : $scope.bugTitle,
+                    isClosed : false
+                };
+                bugService
+                    .save(newBugData)
+                    .then(function(newBug){
+                        $scope.bugs.push(newBug);
+                    });
+            };
+
+            $scope.toggle = function(bug){
+                bug.toggle();
+                bugService.save(bug);
+            };
+            $scope.removeClosed = function(){
+                for(var i=$scope.bugs.length-1; i>=0; i--)
+                    if ($scope.bugs[i].isClosed){
+                        bugService.remove($scope.bugs[i]);
+                        $scope.bugs.splice(i,1);
+                    }
+            };
+     });
+
+    </script>
+</head>
+<body ng-app="bugTracker">
+    <h1>Bug Tracker</h1>
+    <div class="content" ng-controller="bugsController">
+        <div class="stats">
+            <span class="closed">{{ (bugs | filter:{isClosed : true}).length }}</span>
+            <span> / </span>
+            <span> {{bugs.length}} </span>
+        </div>
+        <div class="search">
+            <label for="">Search :</label>
+            <input type="text" ng-model="searchBug.title">
+            <label for="">Is Closed?</label>
+            <input type="checkbox" ng-model="searchBug.isClosed">
+            <input type="button" value="Display All" ng-click="searchBug.isClosed = undefined" >
+        </div>
+        <div class="sort">
+            <label for="">Sort By :</label>
+            <input type="text" ng-model="bugAttributeName">
+            <label for="">Descending ? :</label>
+            <input type="checkbox" ng-model="inDescendingOrder">
+        </div>
+        <div class="bugsList">
+            <label for="">Bug :</label>
+            <input type="text" ng-model="bugTitle">
+            <input type="button" value="Add Bug" ng-click="addBug()">
+            <input type="button" value="Remove Closed" ng-click="removeClosed()">
+            <ol>
+                <li ng-repeat="bug in bugs | filter:searchBug | orderBy:bugAttributeName:inDescendingOrder"
+                   ng-class="{closed : bug.isClosed}"
+                    > <div>
+                        <div class="bugTitle" ng-click="toggle(bug)"
+                    >{{bug.title | trimText}}</div>
+                        <div class="timeStamp">{{bug.createdAt | toMoment}}</div>
+                    </div>
+                </li>
+            </ol>
+        </div>
+    </div>
+</body>
+</html>
