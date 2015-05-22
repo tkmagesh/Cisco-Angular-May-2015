@@ -1,0 +1,29 @@
+{
+  "bugs": [
+    {
+      "id": 1,
+      "title": "Server communication failure",
+      "isClosed": false,
+      "createdAt": "2015-05-18T10:41:56.216Z"
+    },
+    {
+      "id": 2,
+      "title": "User authentication malfunctions",
+      "isClosed": false,
+      "createdAt": "2015-05-18T10:41:57.424Z"
+    },
+    {
+      "id": 3,
+      "title": "Application shuts down frequently",
+      "isClosed": false,
+      "createdAt": "2015-05-18T10:41:58.994Z"
+    },
+    {
+      "title": "Too many network failures during power cut",
+      "isClosed": false,
+      "createdAt": "2015-05-18T10:41:57.424Z",
+      "id": 4
+    }
+  ],
+  "employees": []
+}
