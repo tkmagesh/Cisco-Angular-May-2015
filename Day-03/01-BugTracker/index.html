@@ -89,6 +89,7 @@
          utils.filter("trimText", function(defaultTrimTextLimitLength){
              return function(data, limitLength){
                  limitLength = limitLength || defaultTrimTextLimitLength;
+                 data = data || '';
                  return data.length < limitLength ? data : data.substr(0,limitLength) + "...";
              }
          });
@@ -147,66 +148,76 @@
                 storage.removeItem(bug.id.toString());
             }
          });
-     bugTracker.controller("bugsController", function($scope, Bug, bugStorage, $http){
+         bugTracker.service("bugService", function($http, Bug, $q){
 
-            $scope.bugs = [];
-            $http
+         this.getAll = function(){
+             var deferred = $q.defer();
+             $http
                 .get('http://localhost:9090/bugs')
                 .then(function(response){
-                    console.log(response);
-                    $scope.bugs = response.data.map(function(d){ return new Bug(d)});
+                    var result = response.data
+                                    .map(function(d){ return new Bug(d)})
+                    deferred.resolve(result);
+
                 });
+             return deferred.promise;
+         };
+
+         this.save = function(bug){
+             var method = !bug.id ? "post" : "put";
+             var url = "http://localhost:9090/bugs" + (method === "post" ? "" : "/" + bug.id);
+             var deferred = $q.defer();
+             $http({
+                url : url,
+                method : method,
+                data : bug
+             }).then(function(response){
+                 console.log(response);
+                 deferred.resolve(new Bug(response.data));
+             })
+             return deferred.promise;
+         };
+         this.remove = function(bug){
+             var url = "http://localhost:9090/bugs/" + bug.id;
+             $http({
+                 method : 'delete',
+                 url : url
+             });
+         };
+     });
+         bugTracker.controller("bugsController", function($scope, bugService){
+
+            $scope.bugs = [];
+            bugService.getAll()
+                .then(function(bugs){
+                    $scope.bugs = bugs;
+                })
             $scope.bugTitle = '';
+
             $scope.addBug = function(){
                 var newBugData = {
                     title : $scope.bugTitle,
                     isClosed : false
                 };
-                $http
-                    .post('http://localhost:9090/bugs',newBugData)
-                    .then(function(response){
-                        $scope.bugs.push(new Bug(response.data));
-                        $scope.bugTitle = '';
+                bugService
+                    .save(newBugData)
+                    .then(function(newBug){
+                        $scope.bugs.push(newBug);
                     });
             };
 
             $scope.toggle = function(bug){
                 bug.toggle();
-                $http.put('http://localhost:9090/bugs/' + bug.id, bug);
+                bugService.save(bug);
             };
             $scope.removeClosed = function(){
                 for(var i=$scope.bugs.length-1; i>=0; i--)
                     if ($scope.bugs[i].isClosed){
-                        bugStorage.remove($scope.bugs[i]);
+                        bugService.remove($scope.bugs[i]);
                         $scope.bugs.splice(i,1);
                     }
             };
-
-            /*$scope.searchBug = {
-                title : '',
-                isClosed : undefined
-            };*/
-            $scope.getClosedCount = function(){
-                 return $scope.bugs.filter(function(bug){
-                     return bug.isClosed;
-                 }).length;
-            };
-         });
-
-         /*bugTracker.filter("getClosedCount", function(){ // factory to create the filter
-             return function(data){ // the actual filter
-                 return data.filter(function(bug){
-                     return bug.isClosed;
-                 }).length;
-             }
-         });*/
-         /*bugTracker.filter("getClosedCount", function($filter){ // factory to create the filter
-             return function(data){ // the actual filter
-                 var builtinFilterFilter = $filter('filter');
-                 return builtinFilterFilter(data, {isClosed : true}).length;
-             }
-         });*/
-
+     });
 
     </script>
 </head>
